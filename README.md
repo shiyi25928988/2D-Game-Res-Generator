@@ -52,18 +52,30 @@ npm run dev
 
 ### 打包（Windows）
 
+编译脚本的默认产物就是 **exe 文件**，输出到 `release/`：
+
 ```bash
+npm run dist           # 默认：便携版 exe + 安装包 exe
+npm run dist:exe       # 只出便携版单文件 exe（双击即用，免安装）
+npm run dist:installer # 只出安装包 exe
 npm run dist:dir       # 未打包目录 release/win-unpacked（最快，用于验证）
-npm run dist           # NSIS 安装包 release/ResGen-<版本>-setup.exe
-npm run dist:portable  # 便携版单文件 ResGen-<版本>-portable.exe
-npm run dist:all       # 三者全出
+npm run dist:all       # 未打包目录 + 便携版 + 安装包
 ```
+
+产出文件：
+
+| 文件 | 用途 |
+| --- | --- |
+| `ResGen-<版本>-portable.exe` | 便携版单文件，双击直接运行，无需安装 |
+| `ResGen-<版本>-setup.exe` | NSIS 安装包，带开始菜单 / 桌面快捷方式 |
 
 也可以直接**双击 `build.bat`**，效果等同 `npm run dist`（会自动补装依赖）。
 
+编译成功后脚本会把每个 exe 的**绝对路径和体积**打印在末尾，直接复制即可分发。
+
 脚本默认流程：清理 → 类型检查 → electron-vite 构建 → electron-builder 打包 → 列出产物。
-常用参数：`--no-typecheck` 跳过类型检查、`--keep-out` 复用已有构建、`--out=目录` 指定产物目录、
-`--no-cn` 关闭国内镜像、`--proxy=URL` 为下载步骤指定代理。
+常用参数：`--exe` 等价 `--portable`、`--no-typecheck` 跳过类型检查、`--keep-out` 复用已有构建、
+`--out=目录` 指定产物目录、`--no-cn` 关闭国内镜像、`--proxy=URL` 为下载步骤指定代理。
 
 打包细节：
 

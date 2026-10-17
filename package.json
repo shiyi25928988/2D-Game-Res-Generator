@@ -35,6 +35,8 @@
     "smoke": "node scripts/smoke.mjs",
     "package": "node scripts/build.mjs --dir",
     "dist": "node scripts/build.mjs",
+    "dist:exe": "node scripts/build.mjs --portable",
+    "dist:installer": "node scripts/build.mjs --nsis",
     "dist:dir": "node scripts/build.mjs --dir",
     "dist:portable": "node scripts/build.mjs --portable",
     "dist:all": "node scripts/build.mjs --all"

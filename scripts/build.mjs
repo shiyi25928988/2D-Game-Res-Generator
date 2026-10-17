@@ -2,10 +2,11 @@
 /**
  * 一键编译脚本
  *
- *   node scripts/build.mjs             # 类型检查 + 构建 + 打 NSIS 安装包
+ *   node scripts/build.mjs             # 类型检查 + 构建 + 便携版 exe + 安装包 exe
  *   node scripts/build.mjs --dir       # 只出未打包目录（最快，用于本地验证）
- *   node scripts/build.mjs --portable  # 便携版单文件 exe
- *   node scripts/build.mjs --all       # 未打包目录 + 安装包 + 便携版
+ *   node scripts/build.mjs --portable  # 只出便携版单文件 exe
+ *   node scripts/build.mjs --nsis      # 只出安装包 exe
+ *   node scripts/build.mjs --all       # 未打包目录 + 便携版 + 安装包
  *
  * 国内网络自动走镜像；Windows 下自动修复 electron-builder 工具链的符号链接问题。
  * Windows 用户也可直接双击 build.bat。
@@ -26,10 +27,10 @@ const EB_UPSTREAM = `${NPM_MIRROR}electron-builder-binaries/`
 const HELP = `
 用法: node scripts/build.mjs [选项]
 
-目标（可组合，默认 --nsis）
+目标（可组合，默认 --portable + --nsis，两者都产出 exe）
   --dir          生成未打包目录 release/win-unpacked（最快，用于验证）
-  --nsis         生成 NSIS 安装包
-  --portable     生成便携版单文件 exe
+  --nsis         生成安装包 exe（ResGen-<版本>-setup.exe）
+  --portable     生成便携版单文件 exe（双击即用，免安装）
   --all          三者全出
 
 选项
@@ -56,6 +57,7 @@ function parseArgs(argv) {
         opts.targets.add('nsis')
         break
       case '--portable':
+      case '--exe':
         opts.targets.add('portable')
         break
       case '--all':
@@ -83,7 +85,11 @@ function parseArgs(argv) {
         else if (arg.startsWith('--')) fail(`未知选项 ${arg}（--help 查看用法）`)
     }
   }
-  if (opts.targets.size === 0) opts.targets.add('nsis')
+  // 默认直接交付 exe：便携版（双击即用）+ 安装包
+  if (opts.targets.size === 0) {
+    opts.targets.add('portable')
+    opts.targets.add('nsis')
+  }
   return opts
 }
 
@@ -264,22 +270,41 @@ async function main() {
       runNode(builder, [...args, `-c.directories.output=${outputDir}`], opts, label)
     }
 
-  // 汇总产物
+  // 汇总产物：优先把可交付的 exe 单独列出来（绝对路径，便于直接复制）
   console.log('\n=== 编译完成 ===')
-  if (existsSync(outputDir)) {
-    const entries = readdirSync(outputDir).map((name) => {
-      const p = join(outputDir, name)
-      const st = statSync(p)
-      return { name, size: st.isDirectory() ? null : st.size, dir: st.isDirectory() }
-    })
-    for (const e of entries.sort((a, b) => Number(a.dir) - Number(b.dir))) {
-      if (e.dir) console.log(`  [目录] ${e.name}/`)
-      else console.log(`  [文件] ${e.name}  (${human(e.size)})`)
-    }
-    console.log(`\n产物目录: ${outputDir}`)
-  } else {
+  if (!existsSync(outputDir)) {
     console.log('未生成产物，请检查上方日志')
+    return
   }
+
+  const entries = readdirSync(outputDir).map((name) => {
+    const p = join(outputDir, name)
+    const st = statSync(p)
+    return { name, size: st.isDirectory() ? null : st.size, dir: st.isDirectory() }
+  })
+  for (const e of entries.sort((a, b) => Number(a.dir) - Number(b.dir))) {
+    if (e.dir) console.log(`  [目录] ${e.name}/`)
+    else if (!e.name.toLowerCase().endsWith('.exe')) console.log(`  [文件] ${e.name}  (${human(e.size)})`)
+  }
+
+  const exes = entries
+    .filter((e) => !e.dir && e.name.toLowerCase().endsWith('.exe'))
+    .sort((a, b) => b.size - a.size)
+
+  if (exes.length > 0) {
+    console.log('\n可执行文件（.exe）:')
+    for (const e of exes) {
+      const kind = /setup/i.test(e.name) ? '安装包' : /portable/i.test(e.name) ? '便携版' : '可执行文件'
+      console.log(`  ✓ ${kind}: ${join(outputDir, e.name)}  (${human(e.size)})`)
+    }
+    console.log('\n便携版直接双击即可运行，无需安装；安装包会创建开始菜单与桌面快捷方式。')
+  } else if (tv.has('dir')) {
+    console.log('\n本次只生成了未打包目录，exe 位于 win-unpacked/ 内；需要分发用 exe 请去掉 --dir 重跑。')
+  } else {
+    console.log('\n[警告] 未找到 exe 产物，请检查上方打包日志')
+  }
+
+  console.log(`\n产物目录: ${outputDir}`)
 }
 
 main().catch((err) => fail(err?.stack || String(err)))

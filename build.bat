@@ -1,6 +1,6 @@
 @echo off
-rem One-click build for Windows. Double-click to build the NSIS installer.
-rem Usage: build.bat [--dir] [--nsis] [--portable] [--all] [--no-typecheck] [--cn] [--proxy=URL]
+rem One-click build for Windows. Double-click to build portable exe + installer exe.
+rem Usage: build.bat [--exe] [--dir] [--nsis] [--portable] [--all] [--no-typecheck] [--cn] [--proxy=URL]
 setlocal
 chcp 65001 >nul
 cd /d "%~dp0"
