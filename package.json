@@ -33,8 +33,11 @@
     "selftest": "node scripts/run-selftest.mjs",
     "e2e": "node scripts/run-e2e.mjs",
     "smoke": "node scripts/smoke.mjs",
-    "package": "npm run build && electron-builder --dir",
-    "dist": "npm run build && electron-builder"
+    "package": "node scripts/build.mjs --dir",
+    "dist": "node scripts/build.mjs",
+    "dist:dir": "node scripts/build.mjs --dir",
+    "dist:portable": "node scripts/build.mjs --portable",
+    "dist:all": "node scripts/build.mjs --all"
   },
   "dependencies": {
     "sharp": "^0.33.5"

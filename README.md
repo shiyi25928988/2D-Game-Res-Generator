@@ -50,12 +50,26 @@ npm install
 npm run dev
 ```
 
-### 打包
+### 打包（Windows）
 
 ```bash
-npm run build   # 构建产物到 out/
-npm run dist    # 生成安装包到 release/
+npm run dist:dir       # 未打包目录 release/win-unpacked（最快，用于验证）
+npm run dist           # NSIS 安装包 release/ResGen-<版本>-setup.exe
+npm run dist:portable  # 便携版单文件 ResGen-<版本>-portable.exe
+npm run dist:all       # 三者全出
 ```
+
+也可以直接**双击 `build.bat`**，效果等同 `npm run dist`（会自动补装依赖）。
+
+脚本默认流程：清理 → 类型检查 → electron-vite 构建 → electron-builder 打包 → 列出产物。
+常用参数：`--no-typecheck` 跳过类型检查、`--keep-out` 复用已有构建、`--out=目录` 指定产物目录、
+`--no-cn` 关闭国内镜像、`--proxy=URL` 为下载步骤指定代理。
+
+打包细节：
+
+- 应用图标与版本信息由 `scripts/after-pack.cjs`（rcedit）写入，图标源文件在 `build/icon.*`，
+  可用 `node scripts/make-icon.mjs` 重新生成
+- 产物目录被占用（例如上一次的程序未退出）时会自动改输出到 `release-<时间戳>`，不会让整次编译白跑
 
 ## 使用流程
 
@@ -129,6 +143,14 @@ npm run smoke       # 真实启动应用，检查界面渲染后自动退出（�
 ## 项目结构
 
 ```
+build.bat               # Windows 一键编译（双击可用）
+scripts/
+├── build.mjs           # 编译脚本（清理 / 类型检查 / 构建 / 打包）
+├── after-pack.cjs      # 打包钩子：写入应用图标与版本信息
+├── make-icon.mjs       # 生成应用图标 build/icon.png / icon.ico
+├── selftest.ts         # 图像管线自检
+├── e2e.ts              # 端到端测试（内置模拟 SD 服务）
+└── smoke.mjs           # 启动冒烟测试
 src/
 ├── main/                 # 主进程
 │   ├── providers/        # 生图服务适配器（WebUI / ComfyUI / OpenAI / 自定义 HTTP）
@@ -140,6 +162,7 @@ src/
 ├── preload/              # contextBridge 受限 API
 ├── renderer/             # Vue 3 界面
 └── shared/               # 主/渲染共享类型
+build/                   # 打包资源（应用图标）
 docs/
 ├── 项目方案.md            # 定位、范围、里程碑、风险
 └── 技术设计.md            # 管线设计、Provider 接口、导出格式
@@ -170,6 +193,12 @@ unset ELECTRON_RUN_AS_NODE
 ```bash
 ELECTRON_MIRROR="https://registry.npmmirror.com/-/binary/electron/" node node_modules/electron/install.js
 ```
+
+**打包时报 winCodeSign 符号链接错误**
+
+electron-builder 自带的 rcedit 步骤需要 winCodeSign 工具链，其中包含 macOS 符号链接，
+普通 Windows 账户无法解压。本项目已在打包配置中关闭该步骤，改由 `scripts/after-pack.cjs`
+单独下载 rcedit 写入图标与版本信息，普通账户可直接打包。
 
 ## 文档
 

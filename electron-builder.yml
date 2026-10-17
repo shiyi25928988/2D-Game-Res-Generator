@@ -1,0 +1,56 @@
+# electron-builder 打包配置
+# 目标平台：Windows x64（NSIS 安装包 / 便携版）
+appId: com.shiyi25928988.resgen
+productName: ResGen
+copyright: Copyright © 2026 2D-Game-Res-Generator contributors
+
+directories:
+  output: release
+  buildResources: build
+
+# 只把构建产物与 package.json 打进包，源码 / 测试脚本 / 文档全部排除
+files:
+  - out/**/*
+  - package.json
+  - '!**/*.map'
+
+asar: true
+# sharp 依赖原生二进制，必须从 asar 中解出，否则运行时报找不到 .node
+asarUnpack:
+  - node_modules/sharp/**
+  - node_modules/@img/**
+
+# rcedit 需要 winCodeSign 工具链（内含 macOS 符号链接，普通 Windows 账户解压必失败），
+# 故关闭，图标与版本信息改由 scripts/after-pack.cjs 用独立 rcedit 写入
+npmRebuild: false
+removePackageScripts: true
+
+# 国内网络下 Electron 运行时走镜像；本地已缓存时不会触发下载
+electronDownload:
+  mirror: https://registry.npmmirror.com/-/binary/electron/
+
+compression: normal
+publish: null
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  executableName: ResGen
+  artifactName: ${productName}-${version}-win-${arch}.${ext}
+  signAndEditExecutable: false
+
+afterPack: ./scripts/after-pack.cjs
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: ResGen
+  artifactName: ${productName}-${version}-setup.${ext}
+
+portable:
+  artifactName: ${productName}-${version}-portable.${ext}
