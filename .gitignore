@@ -1,0 +1,11 @@
+node_modules/
+out/
+dist/
+release/
+.tmp/
+*.log
+*.tsbuildinfo
+.DS_Store
+.vscode/
+.idea/
+.workbuddy/

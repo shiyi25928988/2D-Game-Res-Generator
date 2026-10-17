@@ -1,0 +1,53 @@
+{
+  "name": "2d-game-res-generator",
+  "version": "0.1.0",
+  "description": "2D 游戏美术资源生成器 — 精灵动画帧、图标，一键导出 Godot",
+  "main": "./out/main/index.js",
+  "author": "shiyi25928988",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shiyi25928988/2D-Game-Res-Generator.git"
+  },
+  "homepage": "https://github.com/shiyi25928988/2D-Game-Res-Generator#readme",
+  "bugs": {
+    "url": "https://github.com/shiyi25928988/2D-Game-Res-Generator/issues"
+  },
+  "keywords": [
+    "electron",
+    "vue",
+    "godot",
+    "stable-diffusion",
+    "sprite",
+    "pixel-art",
+    "game-assets",
+    "ai"
+  ],
+  "scripts": {
+    "dev": "electron-vite dev",
+    "start": "electron-vite preview",
+    "build": "electron-vite build",
+    "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
+    "typecheck:web": "vue-tsc --noEmit -p tsconfig.web.json",
+    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "selftest": "node scripts/run-selftest.mjs",
+    "e2e": "node scripts/run-e2e.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "package": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder"
+  },
+  "dependencies": {
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@types/node": "^22.10.2",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^2.3.0",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
+    "vue": "^3.5.13",
+    "vue-tsc": "^2.1.10"
+  }
+}
